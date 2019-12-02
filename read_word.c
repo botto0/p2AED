@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include "open_text_file.h"
+
+
 int read_word(file_data_t *fd)
 {
     int i, c;

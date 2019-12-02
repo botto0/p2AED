@@ -1,15 +1,5 @@
 #include <stddef.h>
-#include <stdio.h>
-
-typedef struct file_data
-{
-    // public data
-    long word_pos;
-    long word_num;
-    char word[64];
-    FILE *fp;
-    long current_pos; // zero-based }
-} file_data_t;
+#include "open_text_file.h"
 
 int open_text_file(char *file_name, file_data_t *fd)
 {
