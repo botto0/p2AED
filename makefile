@@ -1,7 +1,3 @@
-#
-# makefile to compile all programs for the AED.P04 computer lab class
-#
-
 clean:
 	rm -f main
 
