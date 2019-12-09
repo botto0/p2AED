@@ -62,7 +62,7 @@ int main(int argc, char const *argv[])
 {
     file_data_t fd;
     // meter antes a ler o ficheiro do terminal -- Nao esquecer da verificacao de argumentos
-    int r = open_text_file("/Users/botto/Desktop/p2AED/SherlockHolmes.txt" , &fd);
+    int r = open_text_file("/Users/botto/Desktop/p2AED/teste.txt" , &fd);
     if (r != 0)
     {
         fprintf(stderr, "Unable to open file");
@@ -71,8 +71,7 @@ int main(int argc, char const *argv[])
 
     while (read_word(&fd) == 0)
     {
-        printf("%s: %ld %ld\n",fd.word,fd.word_pos,fd.word_num);
-        break;  
+        printf("%s: %ld %ld\n",fd.word,fd.word_pos,fd.word_num);  
     } 
 
     printf("%ld", fd.current_pos);
