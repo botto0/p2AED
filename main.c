@@ -126,7 +126,7 @@ void print_linked_list(file_data_t *head)
     file_data_t *current = head;
     while (current != NULL)
     {
-        printf("val :%d\n", head->val);
+        // comando de print ------
         current = current->next;
     }
 }
