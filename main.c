@@ -15,7 +15,6 @@ typedef struct file_data
     FILE *fp;
     long current_pos; // zero-based }
     struct file_data *next;
-    int val;
 } file_data_t;
 /*----------------------------------------------*/
 
@@ -163,6 +162,8 @@ void insert(char word[64], file_data_t word_info)
         printf("Hello");
     }
 }
+/*----------------------------------------------*/
+
 int main(int argc, char const *argv[])
 {
     file_data_t fd;
