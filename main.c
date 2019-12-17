@@ -112,7 +112,7 @@ void insert(char word[64], node_t *word_info)
 {
 
     printf("INSERT\n");    
-        printf("Asdasdasdasdasd");
+    printf("Asdasdasdasdasd");
 
     long current_distance;
 
@@ -128,7 +128,9 @@ void insert(char word[64], node_t *word_info)
     }
     else
     {
-        node_t *current = hashTable[hcode];
+        node_t *current = malloc(sizeof(node_t));
+        current = hashTable[hcode];
+
         // se as palavras forem as mesmas (e hashcode igual)
         // neste caso apenas temos de atualizar as informacoes do node
         if (strcmp(current->word, word) == 0)
