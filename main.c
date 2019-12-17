@@ -2,45 +2,32 @@
 #include <stdlib.h>
 #include <string.h>
 
-/*  file_data é a estrutura que contém as 
-    informações relativas a cada palavra do ficheiro*/
-typedef struct file_data
-{
-    // public data
-    long word_pos;
-    long word_num;
-    char word[64];
-    FILE *fp;
-    long current_pos; // zero-based }
-} file_data_t;
-/*----------------------------------------------*/
+#define SIZE 37
 
 /*  file_data é a estrutura que contém as 
     informações relativas a cada palavra do ficheiro*/
 typedef struct node
 {
-    file_data_t node_data;
+    long word_pos;
+    long word_num;
+    char word[64];
+    long first_pos;
+    long current_pos;
+    long max_distance;
+    long min_distance;
+    long med_distance;
+    FILE *fp;
     struct node_t *next;
 } node_t;
 /*----------------------------------------------*/
 
-/*Esta é a estrutura que um elemento da Hash Table*/
-typedef struct table_element
-{
-    char key[64];
-    node_t *linked_list[37];
-} table_element_t;
-/*----------------------------------------------*/
-
 /* cria hashTable de tamanho 37 (porque 37 é um número primo, comvém ser primo)*/
-table_element_t *hashTable[37] = {NULL};
+node_t *hashTable[SIZE] = {NULL};
 /*----------------------------------------------*/
 
 /*Hash Fucntion utilizada para a hash table*/
 unsigned int hash_function(const char *str, unsigned int s)
 {
-    printf("hash fucntion");
-
     static unsigned int table[256];
     unsigned int crc, i, j;
     if (table[1] == 0u) // do we need to initialize the table[] array?
@@ -60,70 +47,135 @@ unsigned int hash_function(const char *str, unsigned int s)
 /*----------------------------------------------*/
 
 /*Função que dá print da linked list*/
-void print_linked_list(node_t *head)
+void print_linked_list()
 {
-    printf("PRINT LINKED LIST\n");
-    node_t *current = head;
-    while (current != NULL)
+    for (int i = 0; i < SIZE; i++)
     {
-        printf("(%ld,%ld)\n", head->node_data.word_num, head->node_data.word_pos);
-        current = current->next;
+        node_t *current = hashTable[i];
+        while (current)
+        {
+            printf("%s - (%ld,%ld) -> ", current->word, current->word_num, current->word_pos);
+            current = current->next;
+        }
+        printf("\n");
     }
 }
 /*----------------------------------------------*/
-
-/*Insere elemento na hash Table*/
-void insert(char word[64], long word_pos, long word_num)
+int open_text_file(char *file_name, node_t *fd)
 {
-    printf("INSERT");
+    fd->fp = fopen(file_name, "rb");
+    if (fd->fp == NULL)
+        return -1;
+    fd->word_pos = -1;
+    fd->word_num = -1;
+    fd->word[0] = '\0';
+    fd->current_pos = -1;
+    return 0;
+}
+
+void close_text_file(node_t *fd)
+{
+    fclose(fd->fp);
+    fd->fp = NULL;
+}
+
+int read_word(node_t *fd)
+{
+    int i, c;
+    // skip white spaces
+    do
+    {
+        c = fgetc(fd->fp);
+        if (c == EOF)
+            return -1;
+        fd->current_pos++;
+    } while (c <= 32);
+    // record word
+    fd->word_pos = fd->current_pos;
+    fd->word_num++;
+    fd->word[0] = (char)c;
+    for (i = 1; i < (int)sizeof(fd->word) - 1; i++)
+    {
+        c = fgetc(fd->fp);
+        if (c == EOF)
+            break; // end of file
+        fd->current_pos++;
+        if (c <= 32)
+            break; // terminate word
+        fd->word[i] = (char)c;
+    }
+    fd->word[i] = '\0';
+    return 0;
+}
+/*Insere elemento na hash Table*/
+void insert(char word[64], node_t *word_info)
+{
+
+    printf("INSERT\n");    
+        printf("Asdasdasdasdasd");
+
+    long current_distance;
+
+    node_t *node = malloc(sizeof(node_t));
+    node = word_info;
+    strcpy(node->word, word);
     int hcode = hash_function(word, 37);
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->node_data.word_num = word_num;
-    node->node_data.word_pos = word_pos;
 
     if (hashTable[hcode] == NULL)
     {
-        printf("INSIDE IF");
-        table_element_t *element = (table_element_t *)malloc(sizeof(table_element_t));
-        strcpy(element->key, word);
-        printf("hashTable[hcode]->linked_list[0] = node;");
-        hashTable[hcode]->linked_list[0] = node;
-        printf("return");
+        hashTable[hcode] = node;
         return;
     }
-    printf("PASS if\n");
-    node_t *current = (node_t *)malloc(sizeof(node_t));
-
-    hashTable[hcode]->linked_list[0] = current;
-    while (current != NULL)
+    else
     {
-        current = current->next;
-    }
+        node_t *current = hashTable[hcode];
+        // se as palavras forem as mesmas (e hashcode igual)
+        // neste caso apenas temos de atualizar as informacoes do node
+        if (strcmp(current->word, word) == 0)
+        {
 
-    current->node_data.word_num = word_num;
-    current->node_data.word_pos = word_pos;
-    printf("PUSH DONE\n");
-    return;
+            /*pos, num, cuurentpos, depois-> distances*/
+            current_distance = node->word_pos - current->word_pos;
+
+            current->word_num = node->word_num;
+            current->word_pos = node->word_pos;
+            current->current_pos = node->current_pos;
+
+            if (current_distance > current->max_distance)
+            {
+                current->max_distance = current_distance;
+            }
+            if (current_distance < current->min_distance)
+            {
+                current->min_distance = current_distance;
+            }
+            current->med_distance = current->med_distance + (current_distance - current->med_distance) / (current->word_num + 1);
+            //media = media + (valoratual - media)/(num valores metidos +1)
+            return;
+        }
+        // se as palavras forem diferentes (e hashcode igual)
+        // neste caso temos de adicionar um novo node com a nova palavra
+        while (current->next)
+        {
+            current = current->next;
+        }
+        current = node;
+        return;
+    }
 }
 /*----------------------------------------------*/
 
 int main(int argc, char const *argv[])
 {
-    printf("MAIN");
-    insert("abc", 1, 2);
-    printf("insert1");
-    insert("def", 3, 4);
-    insert("qwe", 5, 6);
-    insert("rty", 7, 8);
-    insert("uio", 9, 10);
-
-    for (int i = 0; i < 37; i++)
+    node_t *nd = malloc(sizeof(node_t));
+    open_text_file("/Users/botto/Desktop/p2AED/teste.txt", nd);
+    while (read_word(nd) == 0)
     {
-        if (hashTable[i] != NULL)
-        {
-            print_linked_list(hashTable[i]->linked_list[0]);
-        }
+        printf("%s\n", nd->word);
+        insert(nd->word, nd);
     }
+    close_text_file(nd);
+    print_linked_list();
 
     return 0;
 }
