@@ -111,9 +111,6 @@ int read_word(node_t *fd)
 void insert(char word[64], node_t *word_info)
 {
 
-    printf("INSERT\n");    
-    printf("Asdasdasdasdasd");
-
     long current_distance;
 
     node_t *node = malloc(sizeof(node_t));
@@ -169,15 +166,17 @@ void insert(char word[64], node_t *word_info)
 
 int main(int argc, char const *argv[])
 {
+    printft("main");
     node_t *nd = malloc(sizeof(node_t));
     open_text_file("/Users/botto/Desktop/p2AED/teste.txt", nd);
     while (read_word(nd) == 0)
     {
-        printf("%s->    Current Position %ld\n\t First Postion %ld\n\t Word Num %ld\n\t Word Pos %ld\n", nd->word, nd->current_pos,nd->first_pos,nd->word_num,nd->word_pos);
-        //insert(nd->word, nd);
+
+        printf("%s->    Current Position %ld\n\t First Postion %ld\n\t Word Num %ld\n\t Word Pos %ld\n", nd->word, nd->current_pos, nd->first_pos, nd->word_num, nd->word_pos);
+        insert(nd->word, nd);
     }
     close_text_file(nd);
-   // print_linked_list();
+    print_linked_list();
 
     return 0;
 }
