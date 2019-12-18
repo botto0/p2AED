@@ -166,7 +166,7 @@ void insert(char word[64], node_t *word_info)
 
 int main(int argc, char const *argv[])
 {
-    printft("main");
+    printf("main");
     node_t *nd = malloc(sizeof(node_t));
     open_text_file("/Users/botto/Desktop/p2AED/teste.txt", nd);
     while (read_word(nd) == 0)
