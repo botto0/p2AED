@@ -173,11 +173,11 @@ int main(int argc, char const *argv[])
     open_text_file("/Users/botto/Desktop/p2AED/teste.txt", nd);
     while (read_word(nd) == 0)
     {
-        printf("%s\n", nd->word);
-        insert(nd->word, nd);
+        printf("%s->    Current Position %ld\n\t First Postion %ld\n\t Word Num %ld\n\t Word Pos %ld\n", nd->word, nd->current_pos,nd->first_pos,nd->word_num,nd->word_pos);
+        //insert(nd->word, nd);
     }
     close_text_file(nd);
-    print_linked_list();
+   // print_linked_list();
 
     return 0;
 }
