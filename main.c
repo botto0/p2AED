@@ -49,17 +49,27 @@ unsigned int hash_function(const char *str, unsigned int s)
 /*Função que dá print da linked list*/
 void print_linked_list()
 {
+    node_t *temp = malloc(sizeof(node_t));
     for (int i = 0; i < SIZE; i++)
     {
-        node_t *current = hashTable[i];
-        while (current)
+         node_t *current = malloc(sizeof(node_t));
+        current = hashTable[i];
+        if (current==NULL){
+            continue;
+        }
+        for(;;)
         {
             printf("%s - (%ld,%ld) -> ", current->word, current->word_num, current->word_pos);
-            current = current->next;
+            if (current->next == NULL)
+                break;
+            temp =current;
+            current = temp->next;
         }
         printf("\n");
     }
+
 }
+
 /*----------------------------------------------*/
 int open_text_file(char *file_name, node_t *fd)
 {
@@ -166,17 +176,16 @@ void insert(char word[64], node_t *word_info)
 
 int main(int argc, char const *argv[])
 {
-    printf("main");
     node_t *nd = malloc(sizeof(node_t));
-    open_text_file("/Users/botto/Desktop/p2AED/teste.txt", nd);
+    open_text_file("/home/lucas/Desktop/p2AED/teste.txt", nd);
     while (read_word(nd) == 0)
     {
-
-        printf("%s->    Current Position %ld\n\t First Postion %ld\n\t Word Num %ld\n\t Word Pos %ld\n", nd->word, nd->current_pos, nd->first_pos, nd->word_num, nd->word_pos);
+        printf("%s->    Current Position %ld\n\t First Postion %ld\n\t Word Num %ld\n\t Word Pos %ld\n", nd->word, nd->current_pos,nd->first_pos,nd->word_num,nd->word_pos);
         insert(nd->word, nd);
     }
     close_text_file(nd);
     print_linked_list();
+
 
     return 0;
 }
