@@ -68,6 +68,24 @@ void print_linked_list()
         printf("\n");
     }
 
+<<<<<<< HEAD
+=======
+      struct node *temp;
+
+    // Return if list is empty 
+    if(head == NULL)
+    {
+        printf("List is empty.");
+        return;
+    }
+    
+    temp = head;
+    while(temp != NULL)
+    {
+        printf("Data = %d\n", temp->data); // Print data of current node
+        temp = temp->next;                 // Move to next node
+    }
+>>>>>>> 37cfdf6c7ade2db2b49f6d88dc9858d673454df5
 }
 
 /*----------------------------------------------*/
@@ -142,7 +160,6 @@ void insert(char word[64], node_t *word_info)
         // neste caso apenas temos de atualizar as informacoes do node
         if (strcmp(current->word, word) == 0)
         {
-
             /*pos, num, cuurentpos, depois-> distances*/
             current_distance = node->word_pos - current->word_pos;
 
