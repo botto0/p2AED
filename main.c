@@ -48,21 +48,22 @@ unsigned int hash_function(const char *str, unsigned int s)
 /*----------------------------------------------*/
 
 /*Função que dá print da linked list*/
-void print_linked_list()
+void printHashTable()
 {
     for (int i = 0; i < SIZE; i++)
     {
-        node_t * current = hashTable[i];
+        node_t *current = hashTable[i];
         if (current == NULL)
         {
             continue;
         }
         for (;;)
         {
-        printf(" WORD ::: %s\n WORD_POS ::: %ld\n WORD_NUM ::: %ld\n CURRENT POS ::: %ld\n MAX DISTANCE ::: %ld\n MIN DISTANCE ::: %ld\n AVG DISTANCE ::: %ld\n", current->word, current->word_pos, current->word_num, current->current_pos, current->max_distance, current->min_distance,current->med_distance);
-            if (current->next == NULL)
-                break;
+            printf(" WORD ::: %s\n WORD_POS ::: %ld\n WORD_NUM ::: %ld\n CURRENT POS ::: %ld\n MAX DISTANCE ::: %ld\n MIN DISTANCE ::: %ld\n AVG DISTANCE ::: %ld\n", current->word, current->word_pos, current->word_num, current->current_pos, current->max_distance, current->min_distance, current->med_distance);
             current = current->next;
+            
+            if (current == NULL)
+                break;
         }
         printf("\n");
     }
@@ -116,15 +117,16 @@ int read_word(node_t *fd)
     return 0;
 }
 /*Insere elemento na hash Table*/
-void insert(char word[64], node_t *word_info)
+void insert(node_t *word_info)
 {
 
     long current_distance;
 
     node_t *node = malloc(sizeof(node_t));
     node = word_info;
+
     printf(":::::::: %s\n", node->word);
-    int hcode = hash_function(word, 37);
+    int hcode = hash_function(node->word, 37);
 
     if (hashTable[hcode] == NULL)
     {
@@ -137,7 +139,7 @@ void insert(char word[64], node_t *word_info)
         current = hashTable[hcode];
         // se as palavras forem as mesmas (e hashcode igual)
         // neste caso apenas temos de atualizar as informacoes do node
-        if (strcmp(current->word, word) == 0)
+        if (strcmp(current->word, node->word) == 0)
         {
             printf("same word\n");
             /*pos, num, cuurentpos, depois-> distances*/
@@ -161,11 +163,14 @@ void insert(char word[64], node_t *word_info)
         }
         // se as palavras forem diferentes (e hashcode igual)
         // neste caso temos de adicionar um novo node com a nova palavra
-        while (current->next)
+        else
         {
-            current = current->next;
+            while (current->next)
+            {
+                current = current->next;
+            }
+            current = node;
         }
-        current = node;
         return;
     }
 }
@@ -175,16 +180,15 @@ int main(int argc, char const *argv[])
 {
     node_t *nd = malloc(sizeof(node_t));
     open_text_file("/home/lucas/Desktop/p2AED/teste.txt", nd);
-    int c = 1;
+
     while (read_word(nd) == 0)
     {
         printf("contr ::: %d\n", c);
         //printf("%s->    Current Position %ld\n\t First Postion %ld\n\t Word Num %ld\n\t Word Pos %ld\n", nd->word, nd->current_pos, nd->first_pos, nd->word_num, nd->word_pos);
-        insert(nd->word, nd);
-        c++;
+        insert(nd);
     }
     close_text_file(nd);
-    print_linked_list();
+    printHashTable();
 
     return 0;
 }
