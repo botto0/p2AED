@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SIZE 37
+#define SIZE 100003
 
 /*  file_data é a estrutura que contém as 
     informações relativas a cada palavra do ficheiro*/
@@ -42,6 +42,7 @@ unsigned int hash_function(const char *str, unsigned int s)
     crc = 0xAED02019u; // initial value (chosen arbitrarily)
     while (*str != '\0')
         crc = (crc >> 8) ^ table[crc & 0xFFu] ^ ((unsigned int)*str++ << 24);
+    printf("HASHCODE:::::::: %d\n", crc % s);
     return crc % s;
 }
 /*----------------------------------------------*/
@@ -49,43 +50,22 @@ unsigned int hash_function(const char *str, unsigned int s)
 /*Função que dá print da linked list*/
 void print_linked_list()
 {
-    node_t *temp = malloc(sizeof(node_t));
     for (int i = 0; i < SIZE; i++)
     {
-         node_t *current = malloc(sizeof(node_t));
-        current = hashTable[i];
-        if (current==NULL){
+        node_t * current = hashTable[i];
+        if (current == NULL)
+        {
             continue;
         }
-        for(;;)
+        for (;;)
         {
-            printf("%s - (%ld,%ld) -> ", current->word, current->word_num, current->word_pos);
+        printf(" WORD ::: %s\n WORD_POS ::: %ld\n WORD_NUM ::: %ld\n CURRENT POS ::: %ld\n MAX DISTANCE ::: %ld\n MIN DISTANCE ::: %ld\n AVG DISTANCE ::: %ld\n", current->word, current->word_pos, current->word_num, current->current_pos, current->max_distance, current->min_distance,current->med_distance);
             if (current->next == NULL)
                 break;
-            temp =current;
-            current = temp->next;
+            current = current->next;
         }
         printf("\n");
     }
-
-<<<<<<< HEAD
-=======
-      struct node *temp;
-
-    // Return if list is empty 
-    if(head == NULL)
-    {
-        printf("List is empty.");
-        return;
-    }
-    
-    temp = head;
-    while(temp != NULL)
-    {
-        printf("Data = %d\n", temp->data); // Print data of current node
-        temp = temp->next;                 // Move to next node
-    }
->>>>>>> 37cfdf6c7ade2db2b49f6d88dc9858d673454df5
 }
 
 /*----------------------------------------------*/
@@ -143,7 +123,7 @@ void insert(char word[64], node_t *word_info)
 
     node_t *node = malloc(sizeof(node_t));
     node = word_info;
-    strcpy(node->word, word);
+    printf(":::::::: %s\n", node->word);
     int hcode = hash_function(word, 37);
 
     if (hashTable[hcode] == NULL)
@@ -155,11 +135,11 @@ void insert(char word[64], node_t *word_info)
     {
         node_t *current = malloc(sizeof(node_t));
         current = hashTable[hcode];
-
         // se as palavras forem as mesmas (e hashcode igual)
         // neste caso apenas temos de atualizar as informacoes do node
         if (strcmp(current->word, word) == 0)
         {
+            printf("same word\n");
             /*pos, num, cuurentpos, depois-> distances*/
             current_distance = node->word_pos - current->word_pos;
 
@@ -195,14 +175,16 @@ int main(int argc, char const *argv[])
 {
     node_t *nd = malloc(sizeof(node_t));
     open_text_file("/home/lucas/Desktop/p2AED/teste.txt", nd);
+    int c = 1;
     while (read_word(nd) == 0)
     {
-        printf("%s->    Current Position %ld\n\t First Postion %ld\n\t Word Num %ld\n\t Word Pos %ld\n", nd->word, nd->current_pos,nd->first_pos,nd->word_num,nd->word_pos);
+        printf("contr ::: %d\n", c);
+        //printf("%s->    Current Position %ld\n\t First Postion %ld\n\t Word Num %ld\n\t Word Pos %ld\n", nd->word, nd->current_pos, nd->first_pos, nd->word_num, nd->word_pos);
         insert(nd->word, nd);
+        c++;
     }
     close_text_file(nd);
     print_linked_list();
-
 
     return 0;
 }
