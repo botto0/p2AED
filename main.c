@@ -126,7 +126,7 @@ void insert(node_t *word_info)
         hashTable[hcode]->last_pos=hashTable[hcode]->first_pos;
         hashTable[hcode]->word_count=1;
         hashTable[hcode]->max_distance=0;
-        hashTable[hcode]->min_distance=999999999;
+        hashTable[hcode]->min_distance=0;
         hashTable[hcode]->med_distance=0;
         hashTable[hcode]->prev_pos=word_info->current_pos;
     }
@@ -140,8 +140,12 @@ void insert(node_t *word_info)
         {
             /*pos, num, currentpos, depois-> distances*/
             current->word_count++;
-            current->med_distance = (current->med_distance+ (word_info->current_pos - current->prev_pos))/(current->word_count-1);
             current_distance = word_info->word_pos - current->word_pos;
+            if(current->word_count==2)
+            {
+				current->min_distance= current_distance;
+			}
+            current->med_distance = (current->med_distance+ (word_info->current_pos - current->prev_pos))/(current->word_count-1);
 			current->last_pos=word_info->current_pos-strlen(word_info->word);
             current->word_num = word_info->word_num;
             current->word_pos = word_info->word_pos;
@@ -155,11 +159,14 @@ void insert(node_t *word_info)
 			}
 			current->max_distance = current-> last_pos - current->first_pos;
             current->current_pos = word_info->current_pos;
-            //media = media + (valoratual - media)/(num valores metidos +1)
+            
         }
         // se as palavras forem diferentes (e hashcode igual)
         // neste caso temos de adicionar um novo node com a nova palavra
-
+		else
+		{
+			;
+		}
     }
 }
 /*----------------------------------------------*/
