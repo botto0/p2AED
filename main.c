@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SIZE 100003
+#define SIZE 1000000000
 
 /*  file_data é a estrutura que contém as 
     informações relativas a cada palavra do ficheiro*/
@@ -59,9 +59,13 @@ void printHashTable()
         {
             continue;
         }
-        printf(" WORD ::: %s\n WORD_COUNT ::: %ld\n FIRST_POS ::: %ld\n LAST POS ::: %ld\n MAX DISTANCE ::: %ld\n MIN DISTANCE ::: %ld\n AVG DISTANCE ::: %ld\n", current->word,current->word_count, current->first_pos,  current->last_pos, current->max_distance, current->min_distance, current->med_distance);
-        printf("\n");
-        }
+        do
+        {
+            printf("HashTable Position %d\n", i);
+            printf("%s >>> wCount %ld | FirstPos %ld | LastPos %ld | MaxDist %ld | MinDist %ld | AvgDist %ld\n", current->word, current->word_count, current->first_pos, current->last_pos, current->max_distance, current->min_distance, current->med_distance);
+            printf("\n");
+        } while (current->next);
+    }
 }
 
 /*----------------------------------------------*/
@@ -122,13 +126,13 @@ void insert(node_t *word_info)
     if (hashTable[hcode] == NULL)
     {
         hashTable[hcode] = word_info;
-        hashTable[hcode]->first_pos=word_info->current_pos-strlen(word_info->word);
-        hashTable[hcode]->last_pos=hashTable[hcode]->first_pos;
-        hashTable[hcode]->word_count=1;
-        hashTable[hcode]->max_distance=0;
-        hashTable[hcode]->min_distance=0;
-        hashTable[hcode]->med_distance=0;
-        hashTable[hcode]->prev_pos=word_info->current_pos;
+        hashTable[hcode]->first_pos = word_info->current_pos - strlen(word_info->word);
+        hashTable[hcode]->last_pos = hashTable[hcode]->first_pos;
+        hashTable[hcode]->word_count = 1;
+        hashTable[hcode]->max_distance = 0;
+        hashTable[hcode]->min_distance = 2147483647;
+        hashTable[hcode]->med_distance = 0;
+        hashTable[hcode]->prev_pos = word_info->current_pos;
     }
     else
     {
@@ -138,60 +142,66 @@ void insert(node_t *word_info)
         // neste caso apenas temos de atualizar as informacoes do node
         if (strcmp(current->word, word_info->word) == 0)
         {
-            /*pos, num, currentpos, depois-> distances*/
+            // aumenta o contador de palavras
             current->word_count++;
-            current_distance = word_info->word_pos - current->word_pos;
-            if(current->word_count==2)
+            if (current->word_count == 1)
             {
-				current->min_distance= current_distance;
-			}
-            current->med_distance = (current->med_distance+ (word_info->current_pos - current->prev_pos))/(current->word_count-1);
-			current->last_pos=word_info->current_pos-strlen(word_info->word);
+                current->first_pos = current->word_pos;
+            }
+            // calcula a distancia atual entre duas palavras (palavra nova - palavra antiga)
+            current_distance = word_info->word_pos - current->word_pos;
+            // atualiza a posição global da ultima palavra
             current->word_num = word_info->word_num;
             current->word_pos = word_info->word_pos;
             if (current_distance < current->min_distance)
             {
                 current->min_distance = current_distance;
             }
-            if(current->current_pos> current->last_pos)
+            if (current_distance > current->max_distance)
             {
-				current->last_pos=current->current_pos;
-			}
-			current->max_distance = current-> last_pos - current->first_pos;
+                current->max_distance = current_distance;
+            }
+            current->med_distance = (current->med_distance + (word_info->current_pos - current->prev_pos)) / (current->word_count - 1);
+
             current->current_pos = word_info->current_pos;
-            
         }
         // se as palavras forem diferentes (e hashcode igual)
         // neste caso temos de adicionar um novo node com a nova palavra
-		else
-		{
-			;
-		}
+        else
+        {
+            ;
+        }
     }
 }
 /*----------------------------------------------*/
-
+node_t *new_node(node_t *fnode)
+{
+    node_t *new_node = malloc(sizeof(node_t));
+    strcpy(new_node->word, fnode->word);
+    new_node->word_pos = fnode->word_pos;
+    new_node->word_num = fnode->word_num;
+    new_node->first_pos = fnode->first_pos;
+    new_node->last_pos = fnode->last_pos;
+    new_node->current_pos = fnode->current_pos;
+    new_node->max_distance = fnode->max_distance;
+    new_node->min_distance = fnode->min_distance;
+    new_node->med_distance = fnode->med_distance;
+    return new_node;
+}
 int main(int argc, char const *argv[])
 {
     node_t *nd = malloc(sizeof(node_t));
-    open_text_file("teste.txt", nd);
+    char fname[32];
+    strcpy(fname, argv[1]);
+    open_text_file(fname, nd);
 
     while (read_word(nd) == 0)
     {
-		node_t *pq = malloc(sizeof(node_t));
-		strcpy(pq->word,nd->word);
-		pq->word_pos = nd->word_pos;
-		pq->word_num = nd->word_num;
-		pq->first_pos= nd->first_pos;
-		pq->last_pos = nd->last_pos;
-		pq->current_pos = nd->current_pos;
-		pq->max_distance= nd->max_distance;
-		pq->min_distance = nd->min_distance;
-		pq->med_distance = nd->med_distance;
-        insert(pq);
+        node_t *node = new_node(nd);
+        insert(node);
     }
     close_text_file(nd);
-   printHashTable();
+    printHashTable();
 
     return 0;
 }
