@@ -2,9 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define InitialSize 1000
-#define minus_inf -1000000000 // a very small integer
-#define plus_inf +1000000000  // a very large integer
+#define InitialSize 1059
 
 typedef struct node
 {
@@ -26,7 +24,7 @@ typedef struct node
 
 long htCounter = 1;
 node_t *hashTable[InitialSize] = {NULL};
-long size = 1000;
+long size = 1059;
 /*----------------------------------------------*/
 
 /*Hash Fucntion utilizada para a hash table*/
@@ -64,7 +62,7 @@ void printHashTable()
 
         while (current != NULL)
         {
-            printf("%s >>> wCount %ld | FirstPos %ld | LastPos %ld | MaxDist %ld | MinDist %ld | AvgDist %ld\n", current->word, current->word_count, current->first_pos, current->word_pos, current->max_distance, current->min_distance, current->med_distance);
+            printf("%s >>> wCount %ld | FirstPos %ld | LastPos %ld | MaxDist %ld | MinDist %ld | AvgDist %ld\n", current->word, current->word_count, current->first_pos, current->last_pos, current->max_distance, current->min_distance, current->med_distance);
             current = current->next;
         }
 
@@ -135,8 +133,8 @@ void insert(node_t *word_info)
         hashTable[hcode]->first_pos = word_info->current_pos - strlen(word_info->word);
         hashTable[hcode]->last_pos = hashTable[hcode]->first_pos;
         hashTable[hcode]->word_count = 1;
-        hashTable[hcode]->max_distance = minus_inf;
-        hashTable[hcode]->min_distance = plus_inf;
+        hashTable[hcode]->max_distance = 0;
+        hashTable[hcode]->min_distance = 0;
         hashTable[hcode]->med_distance = 0;
         hashTable[hcode]->next = NULL;
         hashTable[hcode]->prev_pos = word_info->current_pos;
@@ -146,19 +144,34 @@ void insert(node_t *word_info)
     node_t *current = hashTable[hcode];
     while (current != NULL)
     {
+	//Se houver colisão mas
+		if (&current->word_count == NULL)
+        {
+			htCounter++;
+       		hashTable[hcode] = word_info;
+       		hashTable[hcode]->first_pos = word_info->current_pos;
+      		hashTable[hcode]->last_pos = hashTable[hcode]->first_pos;
+     		hashTable[hcode]->word_count = 1;
+      		hashTable[hcode]->max_distance = 0;
+    		hashTable[hcode]->min_distance = 0;
+     		hashTable[hcode]->med_distance = 0;
+      		hashTable[hcode]->next = NULL;
+     		hashTable[hcode]->prev_pos = word_info->current_pos;
+        	return;
+        }
         // se as palavras forem as mesmas (e hashcode igual)
         // neste caso apenas temos de atualizar as informacoes do node
         if (strcmp(current->word, word_info->word) == 0)
-        {
-            // aumenta o contador de palavras
-            if (current->word_count == 1)
-            {
-                current->first_pos = current->word_pos;
-            }
+        {	
+			// calcula a distancia atual entre duas palavras (palavra nova - palavra antiga)
+            current_distance = word_info->word_pos - current->word_pos;
+			if(current->word_count == 1)
+			{
+				current->min_distance=current_distance;
+			}
             current->word_count++;
             current->last_pos = word_info->current_pos;
-            // calcula a distancia atual entre duas palavras (palavra nova - palavra antiga)
-            current_distance = word_info->word_pos - current->word_pos;
+            current->max_distance = current->last_pos - current->first_pos;
             // atualiza a posição global da ultima palavra
             current->word_num = word_info->word_num;
             current->word_pos = word_info->word_pos;
@@ -170,8 +183,8 @@ void insert(node_t *word_info)
             {
                 current->max_distance = current_distance;
             }
-            current->med_distance = (current->med_distance + (word_info->current_pos - current->prev_pos)) / (current->word_count - 1);
             current->current_pos = word_info->current_pos;
+            current->med_distance = (current->med_distance + (current->current_pos - current->prev_pos)) / (current->word_count - 1);
             break;
         }
         current = current->next;
