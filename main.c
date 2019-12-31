@@ -77,7 +77,10 @@ int open_text_file(char *file_name, node_t *fd)
 {
     fd->fp = fopen(file_name, "rb");
     if (fd->fp == NULL)
+    {
+        printf("Invalid text file\n");
         return -1;
+    }
     fd->word_pos = -1;
     fd->word_num = -1;
     fd->word[0] = '\0';
@@ -198,12 +201,11 @@ void resize()
     node_t *next = malloc(sizeof(node_t));
     node_t *curr = malloc(sizeof(node_t));
 
-    // INITIALIZE NEW TABLE TO EMPTY
     for (int i = 0; i < new_size; i++)
     {
         newHT[i] = NULL;
     }
-    printf("second for\n");
+
     for (int i = 0; i < size; i++)
     {
         next = hashTable[i];
@@ -226,15 +228,23 @@ void resize()
 }
 int main(int argc, char const *argv[])
 {
+    if (argc != 2)
+    {
+        printf("Invalid Number of Arguments\n");
+        return -1;
+    }
+
     node_t *nd = malloc(sizeof(node_t));
     char fname[32];
     strcpy(fname, argv[1]);
-    open_text_file(fname, nd);
+    if (open_text_file(fname, nd) == -1)
+    {
+        return -1;
+    }
 
     while (read_word(nd) == 0)
     {
         node_t *node = new_node(nd);
-        //DYNAMIC REInitialSize
         if (htCounter >= size / 2)
         {
             resize();
