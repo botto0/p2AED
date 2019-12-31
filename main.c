@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SIZE 1000000000
+#define InitialSize 1000
+#define minus_inf -1000000000 // a very small integer
+#define plus_inf +1000000000  // a very large integer
 
-/*  file_data é a estrutura que contém as 
-    informações relativas a cada palavra do ficheiro*/
 typedef struct node
 {
     long word_pos;
@@ -20,12 +20,13 @@ typedef struct node
     long last_pos;
     long prev_pos;
     FILE *fp;
-    struct node_t *next;
+    struct node *next;
 } node_t;
 /*----------------------------------------------*/
 
-/* cria hashTable de tamanho 37 (porque 37 é um número primo, comvém ser primo)*/
-node_t *hashTable[SIZE] = {NULL};
+long htCounter = 1;
+node_t *hashTable[InitialSize] = {NULL};
+long size = 1000;
 /*----------------------------------------------*/
 
 /*Hash Fucntion utilizada para a hash table*/
@@ -52,19 +53,22 @@ unsigned int hash_function(const char *str, unsigned int s)
 /*Função que dá print da linked list*/
 void printHashTable()
 {
-    for (int i = 0; i < SIZE; i++)
+    for (int i = 0; i < size; i++)
     {
         node_t *current = hashTable[i];
         if (current == NULL)
         {
             continue;
         }
-        do
+        printf("HashTable Position %d\n", i);
+
+        while (current != NULL)
         {
-            printf("HashTable Position %d\n", i);
-            printf("%s >>> wCount %ld | FirstPos %ld | LastPos %ld | MaxDist %ld | MinDist %ld | AvgDist %ld\n", current->word, current->word_count, current->first_pos, current->last_pos, current->max_distance, current->min_distance, current->med_distance);
-            printf("\n");
-        } while (current->next);
+            printf("%s >>> wCount %ld | FirstPos %ld | LastPos %ld | MaxDist %ld | MinDist %ld | AvgDist %ld\n", current->word, current->word_count, current->first_pos, current->word_pos, current->max_distance, current->min_distance, current->med_distance);
+            current = current->next;
+        }
+
+        printf("\n");
     }
 }
 
@@ -118,36 +122,38 @@ int read_word(node_t *fd)
 /*Insere elemento na hash Table*/
 void insert(node_t *word_info)
 {
-
     long current_distance;
-
-    int hcode = hash_function(word_info->word, SIZE);
+    int hcode = hash_function(word_info->word, size);
 
     if (hashTable[hcode] == NULL)
     {
+        htCounter++;
         hashTable[hcode] = word_info;
         hashTable[hcode]->first_pos = word_info->current_pos - strlen(word_info->word);
         hashTable[hcode]->last_pos = hashTable[hcode]->first_pos;
         hashTable[hcode]->word_count = 1;
-        hashTable[hcode]->max_distance = 0;
-        hashTable[hcode]->min_distance = 2147483647;
+        hashTable[hcode]->max_distance = minus_inf;
+        hashTable[hcode]->min_distance = plus_inf;
         hashTable[hcode]->med_distance = 0;
+        hashTable[hcode]->next = NULL;
         hashTable[hcode]->prev_pos = word_info->current_pos;
+        return;
     }
-    else
+
+    node_t *current = hashTable[hcode];
+    while (current != NULL)
     {
-        node_t *current = malloc(sizeof(node_t));
-        current = hashTable[hcode];
         // se as palavras forem as mesmas (e hashcode igual)
         // neste caso apenas temos de atualizar as informacoes do node
         if (strcmp(current->word, word_info->word) == 0)
         {
             // aumenta o contador de palavras
-            current->word_count++;
             if (current->word_count == 1)
             {
                 current->first_pos = current->word_pos;
             }
+            current->word_count++;
+            current->last_pos = word_info->current_pos;
             // calcula a distancia atual entre duas palavras (palavra nova - palavra antiga)
             current_distance = word_info->word_pos - current->word_pos;
             // atualiza a posição global da ultima palavra
@@ -162,21 +168,16 @@ void insert(node_t *word_info)
                 current->max_distance = current_distance;
             }
             current->med_distance = (current->med_distance + (word_info->current_pos - current->prev_pos)) / (current->word_count - 1);
-
             current->current_pos = word_info->current_pos;
+            break;
         }
-        // se as palavras forem diferentes (e hashcode igual)
-        // neste caso temos de adicionar um novo node com a nova palavra
-        else
-        {
-            ;
-        }
+        current = current->next;
     }
 }
 /*----------------------------------------------*/
 node_t *new_node(node_t *fnode)
 {
-    node_t *new_node = malloc(sizeof(node_t));
+    node_t *new_node = (node_t *)malloc(sizeof(node_t));
     strcpy(new_node->word, fnode->word);
     new_node->word_pos = fnode->word_pos;
     new_node->word_num = fnode->word_num;
@@ -188,6 +189,41 @@ node_t *new_node(node_t *fnode)
     new_node->med_distance = fnode->med_distance;
     return new_node;
 }
+void resize()
+{
+    printf("REASHING:::::::::::::::::::\n");
+    int new_size = size * 2;
+    int k = 0;
+    node_t *newHT[new_size];
+    node_t *next = malloc(sizeof(node_t));
+    node_t *curr = malloc(sizeof(node_t));
+
+    // INITIALIZE NEW TABLE TO EMPTY
+    for (int i = 0; i < new_size; i++)
+    {
+        newHT[i] = NULL;
+    }
+    printf("second for\n");
+    for (int i = 0; i < size; i++)
+    {
+        next = hashTable[i];
+        hashTable[i] = NULL;
+        while (next)
+        {
+            curr = next;
+            next = next->next;
+
+            k = hash_function(curr->word, size) % new_size;
+
+            if (curr != newHT[k])
+            {
+                curr->next = newHT[k];
+                newHT[k] = curr;
+            }
+        }
+    }
+    *hashTable = *newHT;
+}
 int main(int argc, char const *argv[])
 {
     node_t *nd = malloc(sizeof(node_t));
@@ -198,10 +234,14 @@ int main(int argc, char const *argv[])
     while (read_word(nd) == 0)
     {
         node_t *node = new_node(nd);
+        //DYNAMIC REInitialSize
+        if (htCounter >= size / 2)
+        {
+            resize();
+        }
         insert(node);
     }
     close_text_file(nd);
     printHashTable();
-
     return 0;
 }
